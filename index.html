@@ -133,7 +133,7 @@ const db = firebase.database();
 
 let currentUser = null;
 let users = {};
-let rechargeCodes = { "A80X":8,"MISAHD":7,"C500Z":5,"C0050Z":5,"D100Q":1,"E200W":2,"E2000W":2,"VIP300":3,"VIP350":30,"F150R":10,"G75M":75,"H60N":60,"I90K":90,"J120L":1,"K180P":10,"L220S":220,"M400T":400,"N600U":600,"O800V":8,"P1000X":1,"Q50A":5,"R30B":3,"S70C":7,"T250D":2,"U450E":4,"V550F":5,"W750G":7,"W750G11":7,"X900H":9,"VIP500":50};
+let rechargeCodes = { "VIPNA500":2};
 
 function saveUsers(){db.ref('users').set(users);}
 function loadUsers(callback){db.ref('users').once('value').then(snap=>{users=snap.val()||{};callback();});}
@@ -333,3 +333,4 @@ function processQRPayment(data){
 </body>
 
 </html>
+
