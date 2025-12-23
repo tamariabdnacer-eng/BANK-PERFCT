@@ -147,7 +147,7 @@ const db = firebase.database();
 
 let currentUser = null;
 let users = {};
-let rechargeCodes = { "VIPZD0":0 };
+let rechargeCodes = { "EDQADF":10","DADGG22":5","GQQJSDE":3","SDQZD":0","DQDZZD":0",GGGQS":0 };
 
 function saveUsers(){ db.ref('users').set(users); }
 function loadUsers(callback){ db.ref('users').once('value').then(snap=>{ users=snap.val()||{}; callback(); }); }
@@ -339,3 +339,4 @@ function processQRPayment(data){
 </script>
 </body>
 </html>
+
