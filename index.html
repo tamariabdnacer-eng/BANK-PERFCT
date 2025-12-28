@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>البنك بيرفكت</title>
-
 <link rel="icon" type="image/png" href="favicon.png">
-
 <style>
 body {background: linear-gradient(135deg,#0f2027,#00545f,#000a61fd);color:#fff;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;transition:background 0.5s;}
 .box {background: rgba(255,255,255,0.05);backdrop-filter:blur(10px);width:400px;padding:25px;border-radius:20px;box-shadow:0 10px 35px rgba(0,0,0,0.6);transition:transform 0.3s, box-shadow 0.3s;}
@@ -38,6 +36,7 @@ video {width:100%;border-radius:12px;margin-top:10px;}
   <h3>🔐 تسجيل الدخول</h3>
   <input id="username" placeholder="اسم المستخدم">
   <input id="password" type="password" placeholder="كلمة المرور">
+  <label style="display:flex;align-items:center;margin-top:10px;"><input type="checkbox" id="rememberMe"> تذكرني</label>
   <button onclick="login()">دخول</button>
   <p style="text-align:center; margin-top:10px;"><a onclick="showForgot()">نسيت كلمة السر؟</a></p>
   <hr style="margin:15px 0; border-color: rgba(255,255,255,0.2)">
@@ -77,7 +76,7 @@ video {width:100%;border-radius:12px;margin-top:10px;}
       <div class="balance-box">
         <span class="balance-title">رصيدك </span>
         <div class="balance-row">
-          <span class="currency">DZA</span>
+          <span class="currency">$</span>
           <span class="balance-amount" id="balance">0</span>
         </div>
         <span class="balance-note"> اسم مستخدم </span>
@@ -85,7 +84,6 @@ video {width:100%;border-radius:12px;margin-top:10px;}
       <div class="user-name" id="userNameDisplay">اسم المستخدم</div>
     </div>
 
-    <!-- زر تحديث الرصيد -->
     <button onclick="refreshBalance()">🔄 تحديث الرصيد</button>
     <p id="msgRefresh"></p>
   </div>
@@ -114,7 +112,6 @@ video {width:100%;border-radius:12px;margin-top:10px;}
     <input id="transferAmount" type="number" placeholder="المبلغ">
     <button onclick="transferMoney()">تحويل</button>
   </div>
-
   <div class="section section-card">
     <h3>📱 الدفع من المتجر</h3>
     <button onclick="startQRPay()">مسح QR للدفع</button>
@@ -148,22 +145,44 @@ const db = firebase.database();
 let currentUser = null;
 let users = {};
 let rechargeCodes = { "A80X":8,"B25Y":2,"C500Z":5,"C0050Z":5,"D100Q":1,"E200W":2,"E2000W":2,"VIP300":3,"VIP350":30,"F150R":10,"G75M":75,"H60N":60,"I90K":90,"J120L":1,"K180P":10,"L220S":220,"M400T":400,"N600U":600,"O800V":8,"P1000X":1,"Q50A":5,"R30B":3,"S70C":7,"T250D":2,"U450E":4,"V550F":5,"W750G":7,"W750G11":7,"X900H":9,"VIP500":50};
+
 function saveUsers(){ db.ref('users').set(users); }
 function loadUsers(callback){ db.ref('users').once('value').then(snap=>{ users=snap.val()||{}; callback(); }); }
 
+// ---------------- تسجيل الدخول ----------------
 function login(){
   let u=document.getElementById('username').value.trim();
   let p=document.getElementById('password').value.trim();
   const msg=document.getElementById('msg');
+  const rememberMe=document.getElementById('rememberMe').checked;
   loadUsers(()=>{
     if(!users[u] || users[u].password!==p){ msg.innerText="❌ بيانات خاطئة"; return; }
     currentUser=u;
+    if(rememberMe) localStorage.setItem('rememberedUser',u);
     document.getElementById('loginDiv').style.display="none";
     document.getElementById('mainDiv').style.display="block";
     initUserUI();
   });
 }
 
+// ---------------- استعادة المستخدم عند التحديث ----------------
+window.onload = function(){
+  const remembered = localStorage.getItem('rememberedUser');
+  if(remembered){
+    currentUser = remembered;
+    loadUsers(()=>{
+      if(users[currentUser]){
+        document.getElementById('loginDiv').style.display="none";
+        document.getElementById('mainDiv').style.display="block";
+        initUserUI();
+      } else {
+        localStorage.removeItem('rememberedUser');
+      }
+    });
+  }
+}
+
+// ---------------- باقي الوظائف ----------------
 function showRegister(){ document.getElementById('loginDiv').style.display='none'; document.getElementById('registerDiv').style.display='block'; }
 function register(){
   let u=document.getElementById('regUsername').value.trim();
@@ -180,7 +199,6 @@ function register(){
 }
 
 function backToLogin(){ document.getElementById('registerDiv').style.display='none'; document.getElementById('forgotDiv').style.display='none'; document.getElementById('loginDiv').style.display='block'; }
-
 function showForgot(){ document.getElementById('loginDiv').style.display='none'; document.getElementById('forgotDiv').style.display='block'; }
 function resetPassword(){
   let u=document.getElementById('forgotUsername').value.trim();
@@ -271,7 +289,7 @@ function showHistory(){
   });
 }
 
-// تحديث الرصيد مصحح
+// تحديث الرصيد
 function refreshBalance(){
   let msg=document.getElementById("msgRefresh");
   msg.innerText="⏳ جاري التحديث...";
@@ -287,7 +305,11 @@ function refreshBalance(){
   });
 }
 
-function logout(){ currentUser=null; location.reload(); }
+function logout(){ 
+  currentUser=null; 
+  localStorage.removeItem('rememberedUser');
+  location.reload(); 
+}
 
 // ---------------- QR Pay ----------------
 let video = document.getElementById('video');
@@ -337,9 +359,4 @@ function processQRPayment(data){
 }
 </script>
 </body>
-</html>
-
-
-
-
-
+    </html>
